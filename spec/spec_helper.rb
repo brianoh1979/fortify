@@ -1,7 +1,12 @@
 require "bundler/setup"
 require "fortify"
+require "pry"
 
 RSpec.configure do |config|
+  load "support/schema.rb"
+  require "support/models.rb"
+  load "support/fixtures.rb"
+  require "support/policies.rb"
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = ".rspec_status"
 
