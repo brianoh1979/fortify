@@ -25,4 +25,30 @@ RSpec.describe Fortify do
       end
     end
   end
+
+  describe "policies" do
+    let(:current_user) { User.find_by(name: 'default-user') }
+
+    before { Fortify.user = current_user }
+
+    context 'applying scope' do
+      it 'scopes' do
+        safe_project = Project.safe
+        expect(safe_project.size).to eq 1
+        expect(safe_project.first.id).to eq current_user.project_ids.first
+      end
+    end
+
+    context 'applying validation' do
+      it 'allows permitted actions' do
+        project = Project.safe.first
+        expect(project.update_attributes(name: 'ver2')).to eq true
+      end
+
+      it 'does not allow unpermitted actions' do
+        project = Project.safe.first
+        expect(project.destroy).to eq false
+      end
+    end
+  end
 end
