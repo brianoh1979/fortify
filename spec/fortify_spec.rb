@@ -26,10 +26,31 @@ RSpec.describe Fortify do
     end
   end
 
+  describe "#activate!" do
+    context 'when activate! is not called' do
+      it 'does not apply Fortify' do
+        expect{User.safe}.to raise_error(NoMethodError)
+      end
+    end
+
+    context 'when activate! is called' do
+      let(:current_user) { User.find_by(name: 'default-user') }
+
+      it 'applies Fortify' do
+        Fortify.activate!
+        Fortify.user = current_user
+        expect(User.safe.size).to eq 1
+      end
+    end
+  end
+
   describe "policies" do
     let(:current_user) { User.find_by(name: 'default-user') }
 
-    before { Fortify.user = current_user }
+    before do
+      Fortify.activate!
+      Fortify.user = current_user
+    end
 
     context 'applying scope' do
       it 'scopes' do

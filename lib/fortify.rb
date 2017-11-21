@@ -1,5 +1,3 @@
-require 'pry'
-require 'pry-byebug'
 require 'pundit'
 require 'active_record'
 require 'active_support/core_ext'
