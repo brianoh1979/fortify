@@ -6,11 +6,11 @@ module Fortify
       []
     end
 
-    def permitted_attributes_on_create
+    def permitted_attributes_for_update
       []
     end
 
-    def permitted_attributes_on_update
+    def permitted_attributes_for_create
       []
     end
 

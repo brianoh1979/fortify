@@ -1,9 +1,13 @@
 class ApplicationPolicy < Fortify::Base
   def index?
-    true
+    read?
   end
 
   def show?
+    read?
+  end
+
+  def read?
     true
   end
 
@@ -29,8 +33,12 @@ class ApplicationPolicy < Fortify::Base
 end
 
 class ProjectPolicy < ApplicationPolicy
-  def permitted_attributes_on_update
-    [:name, :text]
+  def permitted_attributes_for_read
+    %i(id name number text)
+  end
+
+  def permitted_attributes_for_update
+    %i(name text)
   end
 
   class Scope < Scope
@@ -45,6 +53,10 @@ class ProjectPolicy < ApplicationPolicy
 end
 
 class TaskPolicy < ApplicationPolicy
+  def permitted_attributes_for_read
+    %i(id name number text personal project_id user_id)
+  end
+
   class Scope < Scope
     def resolve
       if user.admin?
@@ -60,6 +72,10 @@ class TaskPolicy < ApplicationPolicy
 end
 
 class UserPolicy < ApplicationPolicy
+  def permitted_attributes_for_read
+    %i(id name number text)
+  end
+
   class Scope < Scope
     def resolve
       if user.admin?

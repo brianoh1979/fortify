@@ -54,19 +54,40 @@ RSpec.describe Fortify do
 
     context 'applying scope' do
       it 'scopes' do
-        safe_project = Project.safe
-        expect(safe_project.size).to eq 1
-        expect(safe_project.first.id).to eq current_user.project_ids.first
+        project = Project.safe
+        expect(project.size).to eq 1
+        expect(project.first.id).to eq current_user.project_ids.first
+      end
+    end
+
+    context '#permitted_attributes_for_read' do
+      it 'cannot read unreadable attributes' do
+        project = Project.safe.first
+        expect(project.can?(:read, :created_at)).to eq false
+        expect(project.can?(:read, :text)).to eq true
       end
     end
 
     context 'applying validation' do
       it 'allows permitted actions' do
         project = Project.safe.first
-        expect(project.update_attributes(name: 'ver2')).to eq true
+
+        expect(project.can?(:update, :name)).to eq true
+        project.name = 'ver2'
+        expect(project.valid?).to eq true
       end
 
-      it 'does not allow unpermitted actions' do
+      it 'does not allow unpermitted updates' do
+        project = Project.safe.first
+
+        expect(project.can?(:update, :created_at)).to eq false
+        project.created_at = DateTime.now
+        expect(project.valid?).to eq false
+        expect(project.errors.first[0]).to eq :created_at
+        expect(project.errors.first[1]).to eq "You are not authorizated to perform this action"
+      end
+
+      it 'does not allow unpermitted destroys' do
         project = Project.safe.first
         expect(project.destroy).to eq false
       end

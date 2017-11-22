@@ -8,14 +8,13 @@ module Fortify
       included do
         before_validation :check_if_creatable, on: :create
         before_validation :check_if_updatable, on: :update
-        before_validation :check_attribute_on_create, on: :create
-        before_validation :check_attribute_on_update, on: :update
+        before_validation :check_attribute_for_create, on: :create
+        before_validation :check_attribute_for_update, on: :update
         before_destroy :check_if_destroyable
       end
 
       private
       def check_if_creatable
-        binding.pry
         return if Fortify.disabled?
 
         unless policy.create?
@@ -40,20 +39,20 @@ module Fortify
         end
       end
 
-      def check_attribute_on_create
+      def check_attribute_for_create
         return if Fortify.disabled?
 
-        attrs = changed_attributes.keys - policy.permitted_attributes_on_create.map(&:to_s)
+        attrs = changed_attributes.keys - policy.permitted_attributes_for_create.map(&:to_s)
 
         attrs.each do |attr|
           errors.add(attr, MESSAGE)
         end
       end
 
-      def check_attribute_on_update
+      def check_attribute_for_update
         return if Fortify.disabled?
 
-        attrs = changed_attributes.keys - policy.permitted_attributes_on_update.map(&:to_s)
+        attrs = changed_attributes.keys - policy.permitted_attributes_for_update.map(&:to_s)
 
         attrs.each do |attr|
           errors.add(attr, MESSAGE)
