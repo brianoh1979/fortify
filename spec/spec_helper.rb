@@ -1,6 +1,8 @@
 require "bundler/setup"
 require "fortify"
 require "pry"
+require "pry-byebug"
+require "database_cleaner"
 
 RSpec.configure do |config|
   load "support/schema.rb"
@@ -16,4 +18,8 @@ RSpec.configure do |config|
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
+
+  DatabaseCleaner.strategy = :transaction
+  config.before(:each) { DatabaseCleaner.start }
+  config.after(:each) { DatabaseCleaner.clean }
 end

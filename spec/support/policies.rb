@@ -1,18 +1,10 @@
-class ApplicationPolicy
-  attr_reader :user, :record
-
-  def initialize(user, record)
-    raise Pundit::NotAuthorizedError, "must be authenticated" unless user
-    @user = user
-    @record = record
-  end
-
+class ApplicationPolicy < Fortify::Base
   def index?
-    user.admin?
+    true
   end
 
   def show?
-    user.admin?
+    true
   end
 
   def create?
@@ -24,7 +16,7 @@ class ApplicationPolicy
   end
 
   def update?
-    user.admin?
+    true
   end
 
   def edit?
@@ -34,27 +26,13 @@ class ApplicationPolicy
   def destroy?
     user.admin?
   end
-
-  def scope
-    Pundit.policy_scope!(user, record.class)
-  end
-
-  class Scope
-    attr_reader :user, :scope
-
-    def initialize(user, scope)
-      raise Pundit::NotAuthorizedError, "must be authenticated" unless user
-      @user = user
-      @scope = scope
-    end
-
-    def resolve
-      scope
-    end
-  end
 end
 
 class ProjectPolicy < ApplicationPolicy
+  def permitted_attributes_on_update
+    [:name, :text]
+  end
+
   class Scope < Scope
     def resolve
       if user.admin?
@@ -84,7 +62,11 @@ end
 class UserPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
-      scope.all
+      if user.admin?
+        scope.all
+      else
+        scope.where(id: user.id)
+      end
     end
   end
 end
