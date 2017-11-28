@@ -41,13 +41,11 @@ class ProjectPolicy < ApplicationPolicy
     %i(name text)
   end
 
-  class Scope < Scope
-    def resolve
-      if user.admin?
-        scope.all
-      else
-        scope.joins(:project_users).where(project_users: { user_id: user.id})
-      end
+  scope do
+    if user.admin?
+      scope.all
+    else
+      scope.joins(:project_users).where(project_users: { user_id: user.id})
     end
   end
 end
@@ -57,16 +55,14 @@ class TaskPolicy < ApplicationPolicy
     %i(id name number text personal project_id user_id)
   end
 
-  class Scope < Scope
-    def resolve
-      if user.admin?
-        scope.all
-      else
-        scope
-          .joins(project: :project_users)
-          .where(project_users: { user_id: user.id })
-          .where("(personal = 'f' OR (personal = 't' AND tasks.user_id = :user_id))", user_id: user.id)
-      end
+  scope do
+    if user.admin?
+      scope.all
+    else
+      scope
+        .joins(project: :project_users)
+        .where(project_users: { user_id: user.id })
+        .where("(personal = 'f' OR (personal = 't' AND tasks.user_id = :user_id))", user_id: user.id)
     end
   end
 end
@@ -76,13 +72,11 @@ class UserPolicy < ApplicationPolicy
     %i(id name number text)
   end
 
-  class Scope < Scope
-    def resolve
-      if user.admin?
-        scope.all
-      else
-        scope.where(id: user.id)
-      end
+  scope do
+    if user.admin?
+      scope.all
+    else
+      scope.where(id: user.id)
     end
   end
 end

@@ -35,5 +35,9 @@ module Fortify
         scope
       end
     end
+
+    def self.scope(&block)
+      Scope.send(:define_method, :resolve, &block)
+    end
   end
 end
