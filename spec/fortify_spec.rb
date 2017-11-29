@@ -27,12 +27,6 @@ RSpec.describe Fortify do
   end
 
   describe "#activate!" do
-    context 'when activate! is not called' do
-      it 'does not apply Fortify' do
-        expect{User.safe}.to raise_error(NoMethodError)
-      end
-    end
-
     context 'when activate! is called' do
       let(:current_user) { User.find_by(name: 'default-user') }
 
@@ -57,6 +51,11 @@ RSpec.describe Fortify do
         project = Project.safe
         expect(project.size).to eq 1
         expect(project.first.id).to eq current_user.project_ids.first
+      end
+
+      it 'scopes associations' do
+        project = Project.safe.first
+        expect(project.tasks.safe.count).to eq 2
       end
     end
 
@@ -90,6 +89,40 @@ RSpec.describe Fortify do
       it 'does not allow unpermitted destroys' do
         project = Project.safe.first
         expect(project.destroy).to eq false
+      end
+    end
+  end
+
+  describe "scoping" do
+    let(:current_user) { User.find_by(name: 'default-user') }
+    let(:partner_user) { User.find_by(name: 'partner-user') }
+
+    before do
+      Fortify.user = current_user
+      Fortify.activate!
+    end
+    context "default scope" do
+      it "should be active on everything but create" do
+        expect { User.safe.create! }.to change { User.count }.by 1
+      end
+
+      it "should not set default scope attributes on new records" do
+        user = User.safe.create!
+        expect(user.id).to_not eq current_user.id
+      end
+
+      it "should not affect initializing objects from the database" do
+        expect(Task.safe.count).to eq 2
+        expect(Project.safe.first.tasks.safe.count).to eq 2
+      end
+
+      context "querying the database" do
+        before { Fortify.user = partner_user }
+
+        it "should limit via scope" do
+          expect(partner_user.projects.safe.first.tasks.safe.count).to eq 1
+          expect(partner_user.tasks.safe.count).to eq 0
+        end
       end
     end
   end

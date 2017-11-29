@@ -12,7 +12,7 @@ class ApplicationPolicy < Fortify::Base
   end
 
   def create?
-    user.admin?
+    true
   end
 
   def new?
