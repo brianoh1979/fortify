@@ -37,7 +37,8 @@ module Fortify
     end
 
     def self.scope(&block)
-      Scope.send(:define_method, :resolve, &block)
+      #Define Scope subclass on policy class with Fortify::Base::Scope as parent class and override resolve method
+      self.const_set("Scope", Class.new(Scope)).send(:define_method, :resolve, &block)
     end
   end
 end

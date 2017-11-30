@@ -14,6 +14,7 @@ module Fortify
       end
 
       private
+
       def check_if_creatable
         return if Fortify.disabled?
 
