@@ -4,7 +4,7 @@ ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
 
 ActiveRecord::Schema.define do
   self.verbose = false
-  
+
   create_table :projects do |t|
     t.string :name
     t.integer :number

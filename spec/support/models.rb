@@ -1,10 +1,15 @@
-class Project < ActiveRecord::Base
+class ApplicationRecord < ActiveRecord::Base
+  self.abstract_class = true
+  set_fortify
+end
+
+class Project < ApplicationRecord
   has_many :project_users
   has_many :users, through: :project_users
   has_many :tasks
 end
 
-class ProjectUser < ActiveRecord::Base
+class ProjectUser < ApplicationRecord
   validates :user, presence: true
   validates :project, presence: true
 
@@ -12,12 +17,12 @@ class ProjectUser < ActiveRecord::Base
   belongs_to :user
 end
 
-class Task < ActiveRecord::Base
+class Task < ApplicationRecord
   belongs_to :project
   belongs_to :user
 end
 
-class User < ActiveRecord::Base
+class User < ApplicationRecord
   has_many :project_users
   has_many :projects, through: :project_users
   has_many :tasks

@@ -16,7 +16,7 @@ module Fortify
       private
 
       def check_if_creatable
-        return if Fortify.disabled?
+        return unless Fortify.enabled?
 
         unless policy.create?
           errors.add(:base, MESSAGE)
@@ -24,7 +24,7 @@ module Fortify
       end
 
       def check_if_updatable
-        return if Fortify.disabled?
+        return unless Fortify.enabled?
 
         unless policy.update?
           errors.add(:base, MESSAGE)
@@ -32,7 +32,7 @@ module Fortify
       end
 
       def check_if_destroyable
-        return if Fortify.disabled?
+        return unless Fortify.enabled?
 
         unless policy.destroy?
           errors.add(:base, MESSAGE)
@@ -41,7 +41,7 @@ module Fortify
       end
 
       def check_attribute_for_create
-        return if Fortify.disabled?
+        return unless Fortify.enabled?
 
         attrs = changed_attributes.keys - policy.permitted_attributes_for_create.map(&:to_s)
 
@@ -51,7 +51,7 @@ module Fortify
       end
 
       def check_attribute_for_update
-        return if Fortify.disabled?
+        return unless Fortify.enabled?
 
         attrs = changed_attributes.keys - policy.permitted_attributes_for_update.map(&:to_s)
 

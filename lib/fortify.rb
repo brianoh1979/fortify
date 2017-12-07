@@ -6,25 +6,18 @@ require 'active_support/concern'
 require "fortify/version"
 require 'fortify/base'
 require 'fortify/activerecord/base'
-require 'fortify/activerecord/relation'
 require 'fortify/activerecord/validation'
 require 'fortify/activerecord/scoping'
 
 module Fortify
   thread_mattr_accessor :user, instance_accessor: false
-  thread_mattr_accessor :disabled, instance_accessor: false
+  thread_mattr_accessor :enabled, instance_accessor: false
 
   class Error < StandardError; end
   class NotDefinedError < Error; end
+  class InvalidUser < Error; end
 
   class << self
-    def activate!
-      ::ActiveRecord::Base.send :include, Fortify::ActiveRecord::Scoping
-      ::ActiveRecord::Base.send :include, Fortify::ActiveRecord::Base
-      ::ActiveRecord::Relation.send :include, Fortify::ActiveRecord::Relation
-      ::ActiveRecord::Base.send :include, Fortify::ActiveRecord::Validation
-    end
-
     def policy_scope(scope)
       Pundit.policy_scope(user, scope)
     end
@@ -33,15 +26,23 @@ module Fortify
       Pundit.policy(user, record)
     end
 
-    def disabled?
-      disabled == true
+    def enabled?
+      self.enabled != false
     end
 
     def insecurely
-      self.disabled = true
+      self.enabled = false
       yield
     ensure
-      self.disabled = false
+      self.enabled = true
     end
+  end
+end
+
+ActiveSupport.on_load(:active_record) do
+  def self.set_fortify(options={})
+    include Fortify::ActiveRecord::Base
+    include Fortify::ActiveRecord::Validation
+    include Fortify::ActiveRecord::Scoping
   end
 end

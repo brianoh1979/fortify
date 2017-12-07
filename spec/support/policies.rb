@@ -45,7 +45,7 @@ class ProjectPolicy < ApplicationPolicy
     if user.admin?
       scope.all
     else
-      scope.joins(:project_users).where(project_users: { user_id: user.id})
+      scope.joins(:project_users).where(project_users: {user_id: user.id})
     end
   end
 end
@@ -61,7 +61,7 @@ class TaskPolicy < ApplicationPolicy
     else
       scope
         .joins(project: :project_users)
-        .where(project_users: { user_id: user.id })
+        .where(project_users: {user_id: user.id})
         .where("(personal = 'f' OR (personal = 't' AND tasks.user_id = :user_id))", user_id: user.id)
     end
   end
