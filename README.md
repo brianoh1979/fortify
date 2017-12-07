@@ -22,7 +22,13 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+If you want your pundit policies applied at the model level, just add the following like to your model (or ApplicationRecord).
+
+```ruby
+class Post < ApplicationRecord
+  set_fortify
+end
+```
 
 ## Development
 
