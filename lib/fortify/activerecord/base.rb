@@ -12,19 +12,12 @@ module Fortify
         end
       end
 
-      def can?(action, field = nil)
-        return false unless policy.respond_to?("#{action}?") && policy.public_send("#{action}?")
-        return true unless field.present?
-
-        method_name = if policy.respond_to?("permitted_attributes_for_#{action}")
-                        "permitted_attributes_for_#{action}"
-                      else
-                        "permitted_attributes"
-                      end
-
-        permitted_attributes = policy.public_send(method_name).map(&:to_s)
-
-        return permitted_attributes.include?(field.to_s)
+      def can?(action, field=nil)
+        if field.present?
+          policy.send("permitted_attributes_for_#{action}").map(&:to_s).include?(field.to_s)
+        else
+          policy.access_map.keys.include?(action.to_s)
+        end
       end
 
       def policy

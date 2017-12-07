@@ -22,7 +22,7 @@ RSpec.describe Fortify do
     end
     it "loads policies properly" do
       [UserPolicy, TaskPolicy, ProjectPolicy].each do |policy|
-        expect(policy.ancestors).to include ApplicationPolicy
+        expect(policy.ancestors).to include Fortify::Base
       end
     end
   end
@@ -32,7 +32,7 @@ RSpec.describe Fortify do
       let(:current_user) { Fortify.insecurely { User.find_by(name: 'default-user') } }
 
       it 'applies Fortify' do
-        Fortify.user = current_user
+        Fortify.set_user(current_user)
         expect(User.count).to eq 1
       end
     end
@@ -48,8 +48,8 @@ RSpec.describe Fortify do
   describe "policies" do
     let(:current_user) { Fortify.insecurely { User.find_by(name: 'default-user') } }
 
-    before :each do
-      Fortify.user = current_user
+    before do
+      Fortify.set_user(current_user)
     end
 
     context 'applying scope' do
@@ -96,6 +96,15 @@ RSpec.describe Fortify do
         project = Project.first
         expect(project.destroy).to eq false
       end
+
+      context 'when the user can perform destroy' do
+        let(:current_user) { Fortify.insecurely { User.find_by(name: 'admin-user') } }
+
+        it 'allows destroying' do
+          project = Project.first
+          expect(project.can?(:destroy)).to eq true
+        end
+      end
     end
   end
 
@@ -104,7 +113,7 @@ RSpec.describe Fortify do
     let(:partner_user) { Fortify.insecurely { User.find_by(name: 'partner-user') } }
 
     before do
-      Fortify.user = current_user
+      Fortify.set_user(current_user)
     end
     context "default scope" do
       it "should be active on everything but create" do
@@ -122,7 +131,7 @@ RSpec.describe Fortify do
       end
 
       context "querying the database" do
-        before { Fortify.insecurely { Fortify.user = partner_user } }
+        before { Fortify.insecurely { Fortify.set_user(partner_user) } }
 
         it "should limit via scope" do
           expect(partner_user.projects.first.tasks.count).to eq 1

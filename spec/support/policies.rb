@@ -1,82 +1,45 @@
-class ApplicationPolicy < Fortify::Base
-  def index?
-    read?
-  end
+class ProjectPolicy < Fortify::Base
+  fortify do |user|
+    can :create
+    can :read, *%i(id name)
+    can :read, *%i(number text)
 
-  def show?
-    read?
-  end
+    can :update, *%i(name text)
 
-  def read?
-    true
-  end
-
-  def create?
-    true
-  end
-
-  def new?
-    create?
-  end
-
-  def update?
-    true
-  end
-
-  def edit?
-    update?
-  end
-
-  def destroy?
-    user.admin?
-  end
-end
-
-class ProjectPolicy < ApplicationPolicy
-  def permitted_attributes_for_read
-    %i(id name number text)
-  end
-
-  def permitted_attributes_for_update
-    %i(name text)
-  end
-
-  scope do
     if user.admin?
-      scope.all
+      can :destroy
+      default_scope { all }
     else
-      scope.joins(:project_users).where(project_users: {user_id: user.id})
+      default_scope { joins(:project_users).where(project_users: { user_id: user.id}) }
     end
   end
 end
 
-class TaskPolicy < ApplicationPolicy
-  def permitted_attributes_for_read
-    %i(id name number text personal project_id user_id)
-  end
-
-  scope do
+class TaskPolicy < Fortify::Base
+  fortify do |user|
+    can :read
     if user.admin?
-      scope.all
+      default_scope { all }
     else
-      scope
-        .joins(project: :project_users)
-        .where(project_users: {user_id: user.id})
-        .where("(personal = 'f' OR (personal = 't' AND tasks.user_id = :user_id))", user_id: user.id)
+      default_scope do
+        joins(project: :project_users)
+          .where(project_users: { user_id: user.id })
+          .where("(personal = 'f' OR (personal = 't' AND tasks.user_id = :user_id))", user_id: user.id)
+      end
     end
   end
 end
 
-class UserPolicy < ApplicationPolicy
-  def permitted_attributes_for_read
-    %i(id name number text)
-  end
+class UserPolicy < Fortify::Base
+  fortify do |user|
+    can :create
+    can :read
 
-  scope do
     if user.admin?
-      scope.all
+      default_scope { all }
     else
-      scope.where(id: user.id)
+      default_scope { where(id: user.id) }
+      cannot :read, :admin
     end
   end
 end

@@ -18,7 +18,7 @@ module Fortify
       def check_if_creatable
         return unless Fortify.enabled?
 
-        unless policy.create?
+        unless can?(:create)
           errors.add(:base, MESSAGE)
         end
       end
@@ -26,7 +26,7 @@ module Fortify
       def check_if_updatable
         return unless Fortify.enabled?
 
-        unless policy.update?
+        unless can?(:update)
           errors.add(:base, MESSAGE)
         end
       end
@@ -34,7 +34,7 @@ module Fortify
       def check_if_destroyable
         return unless Fortify.enabled?
 
-        unless policy.destroy?
+        unless can?(:destroy)
           errors.add(:base, MESSAGE)
           throw(:abort)
         end

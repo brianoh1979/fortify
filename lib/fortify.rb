@@ -18,8 +18,18 @@ module Fortify
   class InvalidUser < Error; end
 
   class << self
-    def policy_scope(scope)
-      Pundit.policy_scope(user, scope)
+    def set_user(user)
+      self.user = user
+
+      policies.each { |policy| policy.setup_permission(user) }
+    end
+
+    def policies
+      @policies ||= ObjectSpace.each_object(Class).select { |klass| klass < Fortify::Base }
+    end
+
+    def policy_scope(klass)
+      klass.instance_eval(&policy(klass).default_scope_proc) if policy(klass)
     end
 
     def policy(record)
