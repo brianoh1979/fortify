@@ -2,7 +2,7 @@ module Fortify
   class Base
     class_attribute :permission_proc
     thread_mattr_accessor :access_map
-    thread_mattr_accessor(:default_scope_proc) { none }
+    thread_mattr_accessor(:scope_proc) { none }
 
     attr_reader :user, :record
 
@@ -42,8 +42,8 @@ module Fortify
         access_map.delete(action) if access_map[action].empty?
       end
 
-      def default_scope(&block)
-        self.default_scope_proc = block
+      def scope(&block)
+        self.scope_proc = block
       end
     end
 

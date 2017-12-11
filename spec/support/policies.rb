@@ -8,9 +8,9 @@ class ProjectPolicy < Fortify::Base
 
     if user.admin?
       can :destroy
-      default_scope { all }
+      scope { all }
     else
-      default_scope { joins(:project_users).where(project_users: { user_id: user.id}) }
+      scope { joins(:project_users).where(project_users: { user_id: user.id}) }
     end
   end
 end
@@ -19,9 +19,9 @@ class TaskPolicy < Fortify::Base
   fortify do |user|
     can :read
     if user.admin?
-      default_scope { all }
+      scope { all }
     else
-      default_scope do
+      scope do
         joins(project: :project_users)
           .where(project_users: { user_id: user.id })
           .where("(personal = 'f' OR (personal = 't' AND tasks.user_id = :user_id))", user_id: user.id)
@@ -36,9 +36,9 @@ class UserPolicy < Fortify::Base
     can :read
 
     if user.admin?
-      default_scope { all }
+      scope { all }
     else
-      default_scope { where(id: user.id) }
+      scope { where(id: user.id) }
       cannot :read, :admin
     end
   end

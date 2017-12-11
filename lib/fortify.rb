@@ -29,7 +29,7 @@ module Fortify
     end
 
     def policy_scope(klass)
-      klass.instance_eval(&policy(klass).default_scope_proc) if policy(klass)
+      klass.instance_eval(&policy(klass).scope_proc) if policy(klass)
     end
 
     def policy(record)
