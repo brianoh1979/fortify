@@ -1,17 +1,50 @@
 module Fortify
   class Base
+    class_attribute :permission_proc
+    thread_mattr_accessor :access_map
+    thread_mattr_accessor(:scope_proc) { none }
+
     attr_reader :user, :record
 
-    def permitted_attributes
-      []
-    end
+    class << self
+      def model_class
+        @model_class ||= self.name.chomp('Policy').constantize
+      end
 
-    def permitted_attributes_for_update
-      []
-    end
+      def fortify(&block)
+        self.permission_proc = block
+      end
 
-    def permitted_attributes_for_create
-      []
+      def setup_permission(user)
+        self.access_map = HashWithIndifferentAccess.new
+        self.permission_proc.call(user)
+      end
+
+      def can(action, *fields)
+        access_map[action] = [] unless access_map[action].present?
+
+        if fields.present?
+          access_map[action].concat(fields)
+        else
+          access_map[action] = model_class.attribute_names
+        end
+      end
+
+      def cannot(action, *fields)
+        return unless access_map[action].present?
+
+        if fields.present?
+          access_map[action].delete(fields)
+        else
+          access_map.delete(action)
+        end
+
+        access_map.delete(action) if access_map[action].empty?
+      end
+
+      def scope(&block)
+        self.scope_proc = block
+      end
     end
 
     def initialize(user, record)
@@ -19,26 +52,11 @@ module Fortify
       @record = record
     end
 
-    def scope
-      Fortify.policy_scope(record.class)
-    end
+    def method_missing(method, *args)
+      action = method.to_s.gsub!(/^permitted_attributes_for_/, '')
+      super unless action.present?
 
-    class Scope
-      attr_reader :user, :scope
-
-      def initialize(user, scope)
-        @user = user
-        @scope = scope
-      end
-
-      def resolve
-        scope
-      end
-    end
-
-    def self.scope(&block)
-      #Define Scope subclass on policy class with Fortify::Base::Scope as parent class and override resolve method
-      self.const_set("Scope", Class.new(Scope)).send(:define_method, :resolve, &block)
+      access_map[action] || []
     end
   end
 end
