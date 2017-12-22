@@ -13,11 +13,7 @@ module Fortify
       end
 
       def can?(action, field=nil)
-        if field.present?
-          policy.send("permitted_attributes_for_#{action}").map(&:to_s).include?(field.to_s)
-        else
-          policy.access_map.keys.include?(action.to_s)
-        end
+        policy.can?(action, field)
       end
 
       def policy

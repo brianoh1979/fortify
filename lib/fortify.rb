@@ -20,7 +20,6 @@ module Fortify
   class << self
     def set_user(user)
       self.user = user
-
       policies.each { |policy| policy.setup_permission(user) }
     end
 
@@ -33,6 +32,7 @@ module Fortify
     end
 
     def policy(record)
+      # TODO: raise a detailed exception when there is no user set
       Pundit.policy(user, record)
     end
 

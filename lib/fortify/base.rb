@@ -1,14 +1,17 @@
 module Fortify
   class Base
     class_attribute :permission_proc
-    thread_mattr_accessor :access_map
-    thread_mattr_accessor(:scope_proc) { none }
+    # TODO: Upgrade Rails to 5.1 to set default on class_attribute
+    self.permission_proc = Proc.new { |user| }
+
+    thread_mattr_accessor :access_map, instance_writer: false
+    thread_mattr_accessor :scope_proc, instance_writer: false
 
     attr_reader :user, :record
 
     class << self
-      def model_class
-        @model_class ||= self.name.chomp('Policy').constantize
+      def model_class(klass=nil)
+        @model_class ||= (klass || self.name.chomp('Policy').constantize)
       end
 
       def fortify(&block)
@@ -16,7 +19,10 @@ module Fortify
       end
 
       def setup_permission(user)
+        # Setting defaults
         self.access_map = HashWithIndifferentAccess.new
+        self.scope_proc = Proc.new { none }
+
         self.permission_proc.call(user)
       end
 
@@ -57,6 +63,14 @@ module Fortify
       super unless action.present?
 
       access_map[action] || []
+    end
+
+    def can?(action, field=nil)
+      if field.present?
+        self.send("permitted_attributes_for_#{action}").map(&:to_s).include?(field.to_s)
+      else
+        access_map.keys.include?(action.to_s)
+      end
     end
   end
 end
