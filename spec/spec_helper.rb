@@ -12,6 +12,8 @@ RSpec.configure do |config|
   require "support/models.rb"
   load "support/fixtures.rb"
   require "support/policies.rb"
+  require "support/controllers.rb"
+
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = ".rspec_status"
 

@@ -5,6 +5,7 @@ require 'active_support/concern'
 
 require "fortify/version"
 require 'fortify/base'
+require 'fortify/controller'
 require 'fortify/activerecord/base'
 require 'fortify/activerecord/validation'
 require 'fortify/activerecord/scoping'
