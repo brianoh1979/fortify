@@ -4,11 +4,23 @@ module Fortify
       extend ActiveSupport::Concern
 
       included do
-        def self.default_scope
+        def self.fortified
           return all unless Fortify.enabled?
+
           raise InvalidUser.new("Fortify user not set") unless Fortify.user
 
-          Fortify.policy_scope(self)
+          policy_scope
+        end
+
+        def self.policy_scope
+          return unless policy_class
+          self.instance_eval(&policy_class.new(self).fortify_scope)
+        end
+
+        def self.policy_class
+          "#{self.name}Policy".constantize
+        rescue NameError
+          nil
         end
       end
 
@@ -17,7 +29,7 @@ module Fortify
       end
 
       def policy
-        @policy ||= Fortify.policy(self)
+        @policy ||= self.class.policy_class.new(self) if self.class.policy_class
       end
     end
   end

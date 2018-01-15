@@ -8,9 +8,10 @@ class ProjectPolicy < Fortify::Base
 
     if user.admin?
       can :destroy
+      
       scope { all }
     else
-      scope { joins(:project_users).where(project_users: { user_id: user.id}) }
+      scope { user.projects }
     end
   end
 end
@@ -22,18 +23,20 @@ class TaskPolicy < Fortify::Base
       scope { all }
     else
       scope do
-        joins(project: :project_users)
-          .where(project_users: { user_id: user.id })
-          .where("(personal = 'f' OR (personal = 't' AND tasks.user_id = :user_id))", user_id: user.id)
+        user.tasks.where("(personal = 'f' OR (personal = 't' AND tasks.user_id = :user_id))", user_id: user.id)
       end
     end
   end
 end
 
 class UserPolicy < Fortify::Base
-  fortify do |user|
+  fortify do |user, record|
     can :create
     can :read
+
+    if user == record
+      can :update
+    end
 
     if user.admin?
       scope { all }

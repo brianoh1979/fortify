@@ -1,75 +1,77 @@
 module Fortify
   class Base
-    class_attribute :permission_proc
-    # TODO: Upgrade Rails to 5.1 to set default on class_attribute
-    self.permission_proc = Proc.new { |user| }
-
-    thread_mattr_accessor :access_map, instance_writer: false
-    thread_mattr_accessor :scope_proc, instance_writer: false
+    class_attribute :fortify_scope
+    class_attribute :permission_context
 
     attr_reader :user, :record
+    attr_accessor :access_list
 
-    class << self
-      def model_class(klass=nil)
-        @model_class ||= (klass || self.name.chomp('Policy').constantize)
-      end
+    def self.model_class(klass=nil)
+      @model_class ||= (klass || self.model)
+    end
 
-      def fortify(&block)
-        self.permission_proc = block
-      end
+    def self.model
+      @model = self.name.chomp('Policy').constantize
+    end
 
-      def setup_permission(user)
-        # Setting defaults
-        self.access_map = HashWithIndifferentAccess.new
-        self.scope_proc = Proc.new { none }
+    def self.fortify(&block)
+      self.fortify_scope = Proc.new { none }
+      self.permission_context = block_given? ? block : Proc.new { |user, record=nil| }
+    end
 
-        self.permission_proc.call(user)
-      end
+    def self.scope(&block)
+      self.fortify_scope = block
+    end
 
-      def can(action, *fields)
-        access_map[action] = [] unless access_map[action].present?
+    def model
+      self.class.model
+    end
 
-        if fields.present?
-          access_map[action].concat(fields)
-        else
-          access_map[action] = model_class.attribute_names
-        end
-      end
+    def scope(&block)
+      self.class.scope(&block)
+    end
 
-      def cannot(action, *fields)
-        return unless access_map[action].present?
+    def can(action, *fields)
+      self.access_list[action] = [] unless access_list[action].present?
 
-        if fields.present?
-          access_map[action].delete(fields)
-        else
-          access_map.delete(action)
-        end
-
-        access_map.delete(action) if access_map[action].empty?
-      end
-
-      def scope(&block)
-        self.scope_proc = block
+      if fields.present?
+       access_list[action].concat(fields)
+      else
+       self.access_list[action] = model.attribute_names
       end
     end
 
-    def initialize(user, record)
-      @user = user
+    def cannot(action, *fields)
+      return unless access_list[action].present?
+
+      if fields.present?
+        access_list[action].delete(fields)
+      else
+        access_list.delete(action)
+      end
+
+      access_list.delete(action) if access_list[action].empty?
+    end
+
+    def initialize(record)
+      @user = Fortify.user
       @record = record
+      self.access_list = HashWithIndifferentAccess.new
+      self.instance_exec(user, record, &permission_context)
     end
 
     def method_missing(method, *args)
       action = method.to_s.gsub!(/^permitted_attributes_for_/, '')
       super unless action.present?
 
-      access_map[action] || []
+      access_list[action] || []
     end
 
     def can?(action, field=nil)
       if field.present?
         self.send("permitted_attributes_for_#{action}").map(&:to_s).include?(field.to_s)
       else
-        access_map.keys.include?(action.to_s)
+        access_list.keys.include?(action.to_s)
       end
     end
   end

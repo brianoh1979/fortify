@@ -1,6 +1,14 @@
 require "spec_helper"
 
 RSpec.describe Fortify do
+  around(:each) do |example|
+    Fortify.user = nil
+    Fortify.enabled!
+    example.run
+    Fortify.disabled!
+    Fortify.user = nil
+  end
+
   it "has a version number" do
     expect(Fortify::VERSION).not_to be nil
   end
@@ -11,15 +19,14 @@ RSpec.describe Fortify do
     end
 
     it "loads the fixtures" do
-      expect(Fortify.insecurely { Project.count }).to be 2
+      expect(Project.count).to be 2
     end
 
     it "loads models and associations properly" do
-      Fortify.insecurely do
-        expect(User.find_by(name: "default-user").projects.first.name).to eq "Default Project"
-        expect(User.find_by(name: "default-user").projects.first.tasks.first.name).to eq "Default Task"
-      end
+      expect(User.find_by(name: "default-user").projects.first.name).to eq "Default Project"
+      expect(User.find_by(name: "default-user").projects.first.tasks.first.name).to eq "Default Task"
     end
+
     it "loads policies properly" do
       [UserPolicy, TaskPolicy, ProjectPolicy].each do |policy|
         expect(policy.ancestors).to include Fortify::Base
@@ -29,34 +36,50 @@ RSpec.describe Fortify do
 
   describe "#activate!" do
     context 'when activate! is called' do
-      let(:current_user) { Fortify.insecurely { User.find_by(name: 'default-user') } }
+      let(:default_user) { User.find_by(name: 'default-user') }
 
       it 'applies Fortify' do
-        Fortify.set_user(current_user)
-        expect(User.count).to eq 1
+        Fortify.user = default_user
+        expect(User.fortified.count).to eq 1
       end
     end
 
     context "when activate! is called but a user is never set" do
       it "should throw an error" do
         Fortify.user = nil
-        expect { User.all }.to raise_error(Fortify::InvalidUser).with_message("Fortify user not set")
+        expect { User.fortified.all }.to raise_error(Fortify::InvalidUser).with_message("Fortify user not set")
       end
     end
   end
 
+  describe "#insecurely" do
+    it "doesn't change whether fortify is enabled outside the block" do
+      Fortify.enabled = false
+      Fortify.insecurely do
+        expect(Fortify).not_to be_enabled
+        Fortify.enabled = true
+        Fortify.insecurely do
+          expect(Fortify).not_to be_enabled
+        end
+        expect(Fortify).to be_enabled
+      end
+      expect(Fortify).not_to be_enabled
+    end
+  end
+
   describe "policies" do
-    let(:current_user) { Fortify.insecurely { User.find_by(name: 'default-user') } }
+    let(:default_user) { User.find_by(name: 'default-user') }
+    let(:other_user) { User.find_by(name: 'other-user') }
 
     before do
-      Fortify.set_user(current_user)
+      Fortify.user = default_user
     end
 
     context 'applying scope' do
       it 'scopes' do
-        project = Project.all
+        project = Project.fortified.all
         expect(project.size).to eq 1
-        expect(project.first.id).to eq current_user.project_ids.first
+        expect(project.first.id).to eq default_user.project_ids.first
       end
 
       it 'scopes associations' do
@@ -92,15 +115,22 @@ RSpec.describe Fortify do
         expect(project.errors.first[1]).to eq "You are not authorizated to perform this action"
       end
 
+      it 'does not allow updates for unauthorized resources' do
+        expect(default_user.can?(:update)).to be true
+        expect(other_user.can?(:update)).not_to be true
+      end
+
       it 'does not allow unpermitted destroys' do
         project = Project.first
         expect(project.destroy).to eq false
       end
 
       context 'when the user can perform destroy' do
-        let(:current_user) { Fortify.insecurely { User.find_by(name: 'admin-user') } }
+        let(:admin_user) { User.find_by(name: 'admin-user') }
 
         it 'allows destroying' do
+          Fortify.user = admin_user
+
           project = Project.first
           expect(project.can?(:destroy)).to eq true
         end
@@ -112,30 +142,20 @@ RSpec.describe Fortify do
     let(:current_user) { Fortify.insecurely { User.find_by(name: 'default-user') } }
     let(:partner_user) { Fortify.insecurely { User.find_by(name: 'partner-user') } }
 
-    before do
-      Fortify.set_user(current_user)
-    end
-    context "default scope" do
-      it "should be active on everything but create" do
-        expect { User.create! }.to change { Fortify.insecurely { User.count } }.by 1
-      end
-
-      it "should not set default scope attributes on new records" do
-        user = User.create!
-        expect(user.id).to_not eq current_user.id
-      end
-
+    context "fortified scope" do
       it "should not affect initializing objects from the database" do
-        expect(Task.count).to eq 2
-        expect(Project.first.tasks.count).to eq 2
+        Fortify.user = current_user
+
+        expect(Task.fortified.count).to eq 2
+        expect(Project.first.tasks.fortified.count).to eq 2
       end
 
       context "querying the database" do
-        before { Fortify.insecurely { Fortify.set_user(partner_user) } }
-
         it "should limit via scope" do
-          expect(partner_user.projects.first.tasks.count).to eq 1
-          expect(partner_user.tasks.count).to eq 0
+          Fortify.user = partner_user
+
+          expect(Task.fortified.count).to eq 1
+          expect(partner_user.tasks.fortified.count).to eq(1)
         end
       end
     end

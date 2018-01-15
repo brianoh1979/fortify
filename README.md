@@ -22,7 +22,7 @@ Or install it yourself as:
 
 ## Usage
 
-If you want your pundit policies applied at the model level, just add the following like to your model (or ApplicationRecord).
+If you want your policies applied at the model level, just add the following like to your model (or ApplicationRecord).
 
 ```ruby
 class Post < ApplicationRecord

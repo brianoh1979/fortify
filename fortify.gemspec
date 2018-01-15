@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["API@Updater"]
   spec.email         = ["support@updater.com"]
 
-  spec.summary       = %q{Pundit addon to provide model-level authorization}
-  spec.description   = %q{Pundit addon to provide model-level authorization}
+  spec.summary       = %q{Addon to provide model-level authorization}
+  spec.description   = %q{Addon to provide model-level authorization}
   spec.homepage      = "https://github.com/updater/fortify"
   spec.license       = "MIT"
 
@@ -42,5 +42,4 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "activerecord", "~> 5.0.2"
   spec.add_runtime_dependency 'activesupport', '~> 5.0.2'
-  spec.add_runtime_dependency "pundit", ">= 1.1.0"
 end
