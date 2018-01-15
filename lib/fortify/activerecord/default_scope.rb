@@ -4,9 +4,7 @@ module Fortify
       extend ActiveSupport::Concern
 
       included do
-        def self.default_scope
-          self.fortified
-        end
+        default_scope { fortified }
       end
       
     end
