@@ -14,7 +14,7 @@ module Fortify
   thread_mattr_accessor :enabled, instance_accessor: false
 
   class Error < StandardError; end
-  class NotDefinedError < Error; end
+  class NotAuthorizedError < Error; end
   class InvalidUser < Error; end
 
   class << self

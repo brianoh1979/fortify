@@ -8,7 +8,7 @@ class ProjectPolicy < Fortify::Base
 
     if user.admin?
       can :destroy
-      
+
       scope { all }
     else
       scope { user.projects }
@@ -31,18 +31,22 @@ end
 
 class UserPolicy < Fortify::Base
   fortify do |user, record|
-    can :create
-    can :read
+    attrs =  %i(name number text)
+
+    can :create, *attrs
+    can :read, *attrs
 
     if user == record
-      can :update
+      can :update, *attrs
     end
 
     if user.admin?
+      can :create
+      can :update
+      can :destroy
       scope { all }
     else
       scope { where(id: user.id) }
-      cannot :read, :admin
     end
   end
 end
