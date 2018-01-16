@@ -3,8 +3,8 @@ module Fortify
     module Base
       extend ActiveSupport::Concern
 
-      included do
-        def self.fortified
+      class_methods do
+        def fortified
           return all unless Fortify.enabled?
 
           raise InvalidUser.new("Fortify user not set") unless Fortify.user
@@ -12,12 +12,12 @@ module Fortify
           policy_scope
         end
 
-        def self.policy_scope
+        def policy_scope
           return unless policy_class
           self.instance_eval(&policy_class.new(self).fortify_scope)
         end
 
-        def self.policy_class
+        def policy_class
           "#{self.name}Policy".constantize
         rescue NameError
           nil
