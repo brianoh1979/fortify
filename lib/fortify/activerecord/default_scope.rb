@@ -6,7 +6,6 @@ module Fortify
       included do
         default_scope { fortified }
       end
-      
     end
   end
 end
