@@ -7,20 +7,19 @@ module Fortify
         def fortified
           return all unless Fortify.enabled?
 
-          raise InvalidUser.new("Fortify user not set") unless Fortify.user
+          raise InvalidUserError.new("Fortify user not set") unless Fortify.user
 
           policy_scope
         end
 
         def policy_scope
-          return unless policy_class
           self.instance_eval(&policy_class.new(self).fortify_scope)
         end
 
         def policy_class
           "#{self.name}Policy".constantize
         rescue NameError
-          nil
+          raise Fortify::MissingPolicyError.new("Missing policy for model #{self.name}")
         end
       end
 

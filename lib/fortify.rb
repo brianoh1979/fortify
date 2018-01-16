@@ -15,7 +15,8 @@ module Fortify
 
   class Error < StandardError; end
   class NotAuthorizedError < Error; end
-  class InvalidUser < Error; end
+  class InvalidUserError < Error; end
+  class MissingPolicyError < Error; end
 
   class << self
     def enabled!

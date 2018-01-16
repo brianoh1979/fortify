@@ -47,7 +47,7 @@ RSpec.describe Fortify do
     context "when activate! is called but a user is never set" do
       it "should throw an error" do
         Fortify.user = nil
-        expect { User.fortified.all }.to raise_error(Fortify::InvalidUser).with_message("Fortify user not set")
+        expect { User.fortified.all }.to raise_error(Fortify::InvalidUserError).with_message("Fortify user not set")
       end
     end
   end
