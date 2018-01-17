@@ -21,6 +21,14 @@ module Fortify
         rescue NameError
           raise Fortify::MissingPolicyError.new("Missing policy for model #{self.name}")
         end
+
+        def policy
+          policy_class.new(self)
+        end
+
+        def can?(action, field=nil)
+          policy.can?(action, field)
+        end
       end
 
       def can?(action, field=nil)

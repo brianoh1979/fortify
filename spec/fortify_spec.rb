@@ -91,6 +91,8 @@ RSpec.describe Fortify do
     context '#permitted_attributes_for_read' do
       it 'cannot read unreadable attributes' do
         project = Project.first
+        expect(Project.can?(:read, :created_at)).to eq false
+        expect(Project.can?(:read, :text)).to eq true
         expect(project.can?(:read, :created_at)).to eq false
         expect(project.can?(:read, :text)).to eq true
       end
