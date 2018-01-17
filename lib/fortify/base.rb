@@ -6,21 +6,23 @@ module Fortify
     attr_reader :user, :record
     attr_accessor :access_list
 
-    def self.model_class(klass=nil)
-      @model_class ||= (klass || self.model)
-    end
+    class << self
+      def model_class(klass=nil)
+        @model_class ||= (klass || self.model)
+      end
 
-    def self.model
-      @model = self.name.chomp('Policy').constantize
-    end
+      def model
+        @model = self.name.chomp('Policy').constantize
+      end
 
-    def self.fortify(&block)
-      self.fortify_scope = Proc.new { none }
-      self.permission_context = block_given? ? block : Proc.new { |user, record=nil| }
-    end
+      def fortify(&block)
+        self.fortify_scope = Proc.new { none }
+        self.permission_context = block_given? ? block : Proc.new { |user, record=nil| }
+      end
 
-    def self.scope(&block)
-      self.fortify_scope = block
+      def scope(&block)
+        self.fortify_scope = block
+      end
     end
 
     def model
