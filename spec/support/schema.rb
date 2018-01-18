@@ -42,4 +42,9 @@ ActiveRecord::Schema.define do
     t.index ["user_id", "project_id"], name: "index_project_users_on_user_id_and_project_id", unique: true
     t.index ["user_id"], name: "index_project_users_on_user_id", unique: true
   end
+
+  create_table :widgets do |t|
+    t.string :color
+    t.string :shape
+  end
 end

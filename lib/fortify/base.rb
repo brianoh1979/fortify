@@ -8,11 +8,11 @@ module Fortify
 
     class << self
       def model_class(klass=nil)
-        @model_class ||= (klass || self.model)
+        @model_class ||= (klass || self.name.chomp('Policy'))
       end
 
       def model
-        @model = self.name.chomp('Policy').constantize
+        @model = model_class.constantize
       end
 
       def fortify(&block)
@@ -59,7 +59,16 @@ module Fortify
       @user = Fortify.user
       @record = record
       self.access_list = HashWithIndifferentAccess.new
-      self.instance_exec(user, record, &permission_context)
+      permission_contexts = []
+      
+      self.class.ancestors.each do |klass|
+        break if klass.permission_context.nil?
+        permission_contexts.push klass.permission_context
+      end
+      
+      while permission_contexts.any?
+        self.instance_exec(user, record, &permission_contexts.pop)
+      end
     end
 
     def method_missing(method, *args)

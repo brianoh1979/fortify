@@ -27,3 +27,6 @@ class User < ApplicationRecord
   has_many :projects, through: :project_users
   has_many :tasks, through: :projects
 end
+
+class Widget < ActiveRecord::Base
+end

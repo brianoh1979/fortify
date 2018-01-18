@@ -50,3 +50,21 @@ class UserPolicy < Fortify::Base
     end
   end
 end
+
+class ParentWidgetPolicy < Fortify::Base
+  model_class "Widget"
+
+  fortify do |user|
+    scope { where(color: "red") }
+    can :wiggidy
+  end
+end
+
+class ChildWidgetPolicy < ParentWidgetPolicy
+  model_class "Widget"
+  
+  fortify do |user|
+    scope { where(shape: "square") }
+    can :whack
+  end
+end

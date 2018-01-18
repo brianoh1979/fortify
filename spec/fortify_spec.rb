@@ -136,6 +136,27 @@ RSpec.describe Fortify do
         end
       end
     end
+
+    context 'policy inheritance' do
+      let!(:widget_1) { Widget.create!(color: "red", shape: "circle") }
+      let!(:widget_2) { Widget.create!(color: "red", shape: "square") }
+      let!(:widget_3) { Widget.create!(color: "blue", shape: "square") }
+
+      it "chains scopes of parent and child policies" do
+        parent_policy_scope = ParentWidgetPolicy.new(Widget).fortify_scope
+        parent_results = Widget.instance_eval(&parent_policy_scope)
+
+        expect(parent_results).to include widget_1
+        expect(parent_results).to include widget_2
+
+        child_policy_scope = ChildWidgetPolicy.new(Widget).fortify_scope
+        child_results = Widget.instance_eval(&child_policy_scope)
+
+        expect(child_results).not_to include widget_1
+        expect(child_results).to include widget_2
+        expect(child_results).not_to include widget_3
+      end
+    end
   end
 
   describe "scoping" do
