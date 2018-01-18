@@ -1,6 +1,6 @@
 module Fortify
   class Base
-    class_attribute :fortify_scope
+    class_attribute :scopes
     class_attribute :permission_context
 
     attr_reader :user, :record
@@ -16,12 +16,24 @@ module Fortify
       end
 
       def fortify(&block)
-        self.fortify_scope = Proc.new { none }
+        self.scopes = nil
         self.permission_context = block_given? ? block : Proc.new { |user, record=nil| }
       end
 
       def scope(&block)
-        self.fortify_scope = block
+        if self.scopes
+          self.scopes = proc { block.call(self.scopes.call) } #FIXME - this doesn't work because self changes
+        else
+          self.scopes = block
+        end
+      end
+
+      def fortify_scope
+        if self.scopes
+          scopes
+        else 
+          proc { none }
+        end
       end
     end
 
@@ -31,6 +43,10 @@ module Fortify
 
     def scope(&block)
       self.class.scope(&block)
+    end
+
+    def fortify_scope
+      self.class.fortify_scope
     end
 
     def can(action, *fields)
