@@ -13,7 +13,8 @@ module Fortify
         end
 
         def policy_scope
-          self.instance_eval(&policy_class.new(self).fortify_scope)
+          fortify_scopes = policy_class.new(self).fortify_scopes
+          fortify_scopes.inject(self) { |subject, scope| subject.instance_eval(&scope) }
         end
 
         def policy_class
@@ -33,3 +34,5 @@ module Fortify
     end
   end
 end
+
+

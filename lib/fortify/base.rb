@@ -1,7 +1,7 @@
 module Fortify
   class Base
-    class_attribute :scopes
-    class_attribute :permission_context
+    class_attribute :fortify_scopes
+    class_attribute :permission_contexts
 
     attr_reader :user, :record
     attr_accessor :access_list
@@ -16,24 +16,13 @@ module Fortify
       end
 
       def fortify(&block)
-        self.scopes = nil
-        self.permission_context = block_given? ? block : Proc.new { |user, record=nil| }
+        self.permission_contexts ||= []
+        self.permission_contexts << (block_given? ? block : Proc.new { |user, record=nil| })
       end
 
       def scope(&block)
-        if self.scopes
-          self.scopes = proc { block.call(self.scopes.call) } #FIXME - this doesn't work because self changes
-        else
-          self.scopes = block
-        end
-      end
-
-      def fortify_scope
-        if self.scopes
-          scopes
-        else 
-          proc { none }
-        end
+        self.fortify_scopes ||= []
+        self.fortify_scopes << block
       end
     end
 
@@ -43,10 +32,6 @@ module Fortify
 
     def scope(&block)
       self.class.scope(&block)
-    end
-
-    def fortify_scope
-      self.class.fortify_scope
     end
 
     def can(action, *fields)
@@ -75,15 +60,9 @@ module Fortify
       @user = Fortify.user
       @record = record
       self.access_list = HashWithIndifferentAccess.new
-      permission_contexts = []
       
-      self.class.ancestors.each do |klass|
-        break if klass.permission_context.nil?
-        permission_contexts.push klass.permission_context
-      end
-      
-      while permission_contexts.any?
-        self.instance_exec(user, record, &permission_contexts.pop)
+      self.permission_contexts.each do |context|
+        self.instance_exec(user, record, &context)
       end
     end
 
