@@ -31,9 +31,7 @@ RSpec.describe Fortify::Controller do
 
     context "when authorized" do
       it "returns true" do
-        expect {
-          controller.authorize(user, :update)
-        }.not_to raise_error(Fortify::NotAuthorizedError)
+        expect(controller.authorize(user, :update)).to be_nil
       end
     end
 

@@ -56,6 +56,8 @@ module Fortify
     end
 
     def initialize(record)
+      raise InvalidUserError.new("Fortify user not set") if !Fortify.user
+
       @user = Fortify.user
       @record = record
       self.access_list = HashWithIndifferentAccess.new

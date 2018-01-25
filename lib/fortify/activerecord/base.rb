@@ -7,8 +7,6 @@ module Fortify
         def fortified
           return all unless Fortify.enabled?
 
-          raise InvalidUserError.new("Fortify user not set") unless Fortify.user
-
           policy_scope
         end
 

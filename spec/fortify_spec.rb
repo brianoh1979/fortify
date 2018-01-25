@@ -68,74 +68,101 @@ RSpec.describe Fortify do
   end
 
   describe "policies" do
-    let(:default_user) { User.find_by(name: 'default-user') }
-    let(:other_user) { User.find_by(name: 'other-user') }
+    context "when fortify user is set" do
+      let(:default_user) { User.find_by(name: 'default-user') }
+      let(:other_user) { User.find_by(name: 'other-user') }
 
-    before do
-      Fortify.user = default_user
-    end
-
-    context 'applying scope' do
-      it 'scopes' do
-        project = Project.fortified.all
-        expect(project.size).to eq 1
-        expect(project.first.id).to eq default_user.project_ids.first
+      before do
+        Fortify.user = default_user
       end
 
-      it 'scopes associations' do
-        project = Project.first
-        expect(project.tasks.count).to eq 2
-      end
-    end
-
-    context '#permitted_attributes_for_read' do
-      it 'cannot read unreadable attributes' do
-        project = Project.first
-        expect(Project.can?(:read, :created_at)).to eq false
-        expect(Project.can?(:read, :text)).to eq true
-        expect(project.can?(:read, :created_at)).to eq false
-        expect(project.can?(:read, :text)).to eq true
-      end
-    end
-
-    context 'applying validation' do
-      it 'allows permitted actions' do
-        project = Project.first
-
-        expect(project.can?(:update, :name)).to eq true
-        project.name = 'ver2'
-        expect(project.valid?).to eq true
-      end
-
-      it 'does not allow unpermitted updates' do
-        project = Project.first
-
-        expect(project.can?(:update, :created_at)).to eq false
-        project.created_at = DateTime.now
-        expect(project.valid?).to eq false
-        expect(project.errors.first[0]).to eq :created_at
-        expect(project.errors.first[1]).to eq "You are not authorizated to perform this action"
-      end
-
-      it 'does not allow updates for unauthorized resources' do
-        expect(default_user.can?(:update)).to be true
-        expect(other_user.can?(:update)).not_to be true
-      end
-
-      it 'does not allow unpermitted destroys' do
-        project = Project.first
-        expect(project.destroy).to eq false
-      end
-
-      context 'when the user can perform destroy' do
-        let(:admin_user) { User.find_by(name: 'admin-user') }
-
-        it 'allows destroying' do
-          Fortify.user = admin_user
-
-          project = Project.first
-          expect(project.can?(:destroy)).to eq true
+      context 'applying scope' do
+        it 'scopes' do
+          project = Project.fortified.all
+          expect(project.size).to eq 1
+          expect(project.first.id).to eq default_user.project_ids.first
         end
+
+        it 'scopes associations' do
+          project = Project.first
+          expect(project.tasks.count).to eq 2
+        end
+      end
+
+      context '#permitted_attributes_for_read' do
+        it 'cannot read unreadable attributes' do
+          project = Project.first
+          expect(Project.can?(:read, :created_at)).to eq false
+          expect(Project.can?(:read, :text)).to eq true
+          expect(project.can?(:read, :created_at)).to eq false
+          expect(project.can?(:read, :text)).to eq true
+        end
+      end
+
+      context 'applying validation' do
+        it 'allows permitted actions' do
+          project = Project.first
+
+          expect(project.can?(:update, :name)).to eq true
+          project.name = 'ver2'
+          expect(project.valid?).to eq true
+        end
+
+        it 'does not allow unpermitted updates' do
+          project = Project.first
+
+          expect(project.can?(:update, :created_at)).to eq false
+          project.created_at = DateTime.now
+          expect(project.valid?).to eq false
+          expect(project.errors.first[0]).to eq :created_at
+          expect(project.errors.first[1]).to eq "You are not authorizated to perform this action"
+        end
+
+        it 'does not allow updates for unauthorized resources' do
+          expect(default_user.can?(:update)).to be true
+          expect(other_user.can?(:update)).not_to be true
+        end
+
+        it 'does not allow unpermitted destroys' do
+          project = Project.first
+          expect(project.destroy).to eq false
+        end
+
+        context 'when the user can perform destroy' do
+          let(:admin_user) { User.find_by(name: 'admin-user') }
+
+          it 'allows destroying' do
+            Fortify.user = admin_user
+
+            project = Project.first
+            expect(project.can?(:destroy)).to eq true
+          end
+        end
+      end
+    end
+
+    context "when user is not set" do
+      it 'raises an error on destroy' do
+        project = Project.first
+
+        expect {
+          project.destroy
+        }.to raise_error(Fortify::InvalidUserError)
+      end
+
+      it 'raises an error on save' do
+        project = Project.first
+        project.created_at = Time.now
+
+        expect {
+          project.valid?
+        }.to raise_error(Fortify::InvalidUserError)
+      end
+
+      it 'raises an error on scoping' do
+        expect {
+          Project.fortified
+        }.to raise_error(Fortify::InvalidUserError)
       end
     end
   end
