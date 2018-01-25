@@ -36,7 +36,7 @@ class UserPolicy < Fortify::Base
     can :create, *attrs
     can :read, *attrs
 
-    if user == record
+    if user.id == record.id
       can :update, *attrs
     end
 

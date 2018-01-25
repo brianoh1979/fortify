@@ -55,11 +55,11 @@ module Fortify
       access_list.delete(action) if access_list[action].empty?
     end
 
-    def initialize(record)
+    def initialize(object)
       raise InvalidUserError.new("Fortify user not set") if !Fortify.user
 
       @user = Fortify.user
-      @record = record
+      @record = object.respond_to?(:new) ? object.new : object
       self.access_list = HashWithIndifferentAccess.new
       self.instance_exec(user, record, &permission_context)
     end
