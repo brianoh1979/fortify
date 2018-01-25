@@ -167,6 +167,26 @@ RSpec.describe Fortify do
     end
   end
 
+  describe "empty policy" do
+    let(:current_user) { Fortify.insecurely { User.find_by(name: 'default-user') } }
+
+    before(:each) do
+      Fortify.user = current_user
+    end
+
+    it "defaults to cannot" do
+      snippet = Snippet.first
+
+      expect(snippet.can?(:create)).to eq(false)
+      expect(snippet.can?(:update)).to eq(false)
+      expect(snippet.can?(:destroy)).to eq(false)
+    end
+
+    it "scopes to none" do
+      expect(Snippet.fortified.all).to be_empty
+    end
+  end
+
   describe "scoping" do
     let(:current_user) { Fortify.insecurely { User.find_by(name: 'default-user') } }
     let(:partner_user) { Fortify.insecurely { User.find_by(name: 'partner-user') } }

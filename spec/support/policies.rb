@@ -50,3 +50,8 @@ class UserPolicy < Fortify::Base
     end
   end
 end
+
+class SnippetPolicy < Fortify::Base
+  fortify do |user, record|
+  end
+end

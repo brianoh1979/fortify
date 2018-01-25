@@ -18,4 +18,7 @@ Fortify.insecurely do
   ProjectUser.create!(user: default_user, project: default_project)
   ProjectUser.create!(user: partner_user, project: default_project)
   ProjectUser.create!(user: other_user, project: other_project)
+
+  # Snippets
+  Snippet.create(text: "I am a snippet.")
 end
