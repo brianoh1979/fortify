@@ -21,26 +21,4 @@ RSpec.describe Fortify::Controller do
       expect(Fortify.user).to eq(nil)
     end
   end
-
-  describe "#authorize" do
-    around(:each) do |example|
-      Fortify.user = user
-      example.run
-      Fortify.user = nil
-    end
-
-    context "when authorized" do
-      it "returns true" do
-        expect(controller.authorize(user, :update)).to be_nil
-      end
-    end
-
-    context "when not authorized" do
-      it "raises NotAuthorizedError" do
-        expect {
-          controller.authorize(user, :destroy)
-        }.to raise_error(Fortify::NotAuthorizedError)
-      end
-    end
-  end
 end

@@ -18,10 +18,6 @@ module Fortify
       Fortify.user = nil
     end
 
-    def authorize(record, action=params[:action])
-      raise Fortify::NotAuthorizedError unless record.can?(action)
-    end
-
     def run_securely
       prior_enabled_state = Fortify.enabled
       Fortify.enabled = true
