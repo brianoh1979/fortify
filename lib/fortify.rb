@@ -1,3 +1,4 @@
+require 'pundit'
 require 'active_record'
 require 'active_support/core_ext'
 require 'active_support/concern'
@@ -21,6 +22,10 @@ module Fortify
   class << self
     def enabled!
       self.enabled = true
+    end
+
+    def policy(record)
+      Pundit.policy(user, record)
     end
 
     def disabled!

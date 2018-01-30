@@ -41,5 +41,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "simplecov", "~> 0.15.1"
 
   spec.add_runtime_dependency "activerecord", "~> 5.0.2"
-  spec.add_runtime_dependency 'activesupport', '~> 5.0.2'
+  spec.add_runtime_dependency "activesupport", "~> 5.0.2"
+  spec.add_runtime_dependency "pundit", ">= 1.1.0"
 end

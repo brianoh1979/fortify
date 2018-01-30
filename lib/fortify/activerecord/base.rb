@@ -11,17 +11,11 @@ module Fortify
         end
 
         def policy_scope
-          self.instance_eval(&policy_class.new(self).fortify_scope)
-        end
-
-        def policy_class
-          "#{self.name}Policy".constantize
-        rescue NameError
-          raise Fortify::MissingPolicyError.new("Missing policy for model #{self.name}")
+          self.instance_eval(&policy.fortify_scope)
         end
 
         def policy
-          policy_class.new(self)
+          Fortify.policy(self)
         end
 
         def can?(action, field=nil)
@@ -34,7 +28,7 @@ module Fortify
       end
 
       def policy
-        @policy ||= self.class.policy_class.new(self) if self.class.policy_class
+        @policy ||= Fortify.policy(self)
       end
     end
   end
