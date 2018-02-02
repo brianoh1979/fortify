@@ -7,10 +7,6 @@ module Fortify
     attr_accessor :access_list
 
     class << self
-      def model_class(klass=nil)
-        @model_class ||= (klass || self.model)
-      end
-
       def fortify(&block)
         self.fortify_scope = Proc.new { none }
         self.permission_context = block_given? ? block : Proc.new { |user, record=nil| }
@@ -19,14 +15,6 @@ module Fortify
       def scope(&block)
         self.fortify_scope = block
       end
-
-      def model
-        self.name.chomp('Policy').constantize
-      end
-    end
-
-    def model
-      self.record.class.name.constantize
     end
 
     def scope(&block)
@@ -39,7 +27,7 @@ module Fortify
       if fields.present?
        access_list[action].concat(fields)
       else
-       self.access_list[action] = model.attribute_names
+       self.access_list[action] = record.attribute_names
       end
     end
 
