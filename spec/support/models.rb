@@ -18,6 +18,7 @@ class ProjectUser < ApplicationRecord
 end
 
 class Task < ApplicationRecord
+  set_fortify policy: "CustomTaskPolicy"
   belongs_to :project
   belongs_to :user
 end

@@ -11,10 +11,6 @@ module Fortify
         @model_class ||= (klass || self.model)
       end
 
-      def model
-        @model = self.name.chomp('Policy').constantize
-      end
-
       def fortify(&block)
         self.fortify_scope = Proc.new { none }
         self.permission_context = block_given? ? block : Proc.new { |user, record=nil| }
@@ -26,7 +22,7 @@ module Fortify
     end
 
     def model
-      self.class.model
+      self.record.class.name.constantize
     end
 
     def scope(&block)
