@@ -19,6 +19,10 @@ module Fortify
       def scope(&block)
         self.fortify_scope = block
       end
+
+      def model
+        self.name.chomp('Policy').constantize
+      end
     end
 
     def model
