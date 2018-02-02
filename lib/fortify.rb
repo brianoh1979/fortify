@@ -3,7 +3,7 @@ require 'active_record'
 require 'active_support/core_ext'
 require 'active_support/concern'
 
-require "fortify/version"
+require 'fortify/version'
 require 'fortify/base'
 require 'fortify/controller'
 require 'fortify/activerecord/base'
@@ -59,5 +59,10 @@ ActiveSupport.on_load(:active_record) do
     include Fortify::ActiveRecord::Base
     include Fortify::ActiveRecord::Validation
     include Fortify::ActiveRecord::DefaultScope if options[:default_scope] == true
+    if options[:policy]
+      define_singleton_method :policy_class do
+        "#{options[:policy]}".constantize
+      end
+    end
   end
 end

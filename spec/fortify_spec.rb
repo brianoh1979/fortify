@@ -28,7 +28,7 @@ RSpec.describe Fortify do
     end
 
     it "loads policies properly" do
-      [UserPolicy, TaskPolicy, ProjectPolicy].each do |policy|
+      [UserPolicy, CustomTaskPolicy, ProjectPolicy].each do |policy|
         expect(policy.ancestors).to include Fortify::Base
       end
     end
@@ -164,6 +164,18 @@ RSpec.describe Fortify do
           Project.fortified
         }.to raise_error(Fortify::InvalidUserError)
       end
+    end
+  end
+
+  describe "custom named policy" do
+    let(:current_user) { Fortify.insecurely { User.find_by(name: 'default-user') } }
+
+    before(:each) do
+      Fortify.user = current_user
+    end
+
+    it "allows models to name custom policies" do
+      expect(Task.policy.class).to eq CustomTaskPolicy
     end
   end
 

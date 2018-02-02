@@ -16,7 +16,7 @@ class ProjectPolicy < Fortify::Base
   end
 end
 
-class TaskPolicy < Fortify::Base
+class CustomTaskPolicy < Fortify::Base
   fortify do |user|
     can :read
     if user.admin?
