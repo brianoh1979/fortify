@@ -3,7 +3,7 @@ module Fortify
     class_attribute :fortify_scope
     class_attribute :permission_context
 
-    attr_reader :user, :record
+    attr_reader :user
     attr_accessor :access_list
 
     class << self
@@ -47,9 +47,16 @@ module Fortify
       raise InvalidUserError.new("Fortify user not set") if !Fortify.user
 
       @user = user
-      @record = object.respond_to?(:new) ? object.new : object
+      @record = object
       self.access_list = HashWithIndifferentAccess.new
       self.instance_exec(user, record, &permission_context)
+    end
+
+    def record
+      return @record.new if @record.respond_to?(:new)
+      return @record.to_s.classify.constantize.new if @record.is_a?(Symbol)
+
+      @record
     end
 
     def method_missing(method, *args)
