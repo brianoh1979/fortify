@@ -36,20 +36,16 @@ module Fortify
       self.enabled == true
     end
 
-    def insecurely
+    def securely(flag = true)
       prior_enabled_state = self.enabled
-      self.enabled = false
+      self.enabled = flag
       yield
     ensure
       self.enabled = prior_enabled_state
     end
 
-    def securely
-      prior_enabled_state = self.enabled
-      self.enabled = true
-      yield
-    ensure
-      self.enabled = prior_enabled_state
+    def insecurely
+      securely(false) { yield }
     end
   end
 end
