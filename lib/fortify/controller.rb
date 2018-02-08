@@ -10,23 +10,25 @@ module Fortify
       current_user
     end
 
-    def set_fortify_user
-      Fortify.user = fortify_user
-      yield
-    ensure
-      # to address the thread variable leak issues in Puma/Thin webserver
-      Fortify.user = nil
-    end
-
     def run_securely
-      prior_enabled_state = Fortify.enabled
-      Fortify.enabled = true
-      Fortify.user = fortify_user
+      @securely_nesting ||= 0
+      @securely_nesting += 1
+
+      if @securely_nesting == 1
+        prior_enabled_state = Fortify.enabled
+        Fortify.enabled = true
+        Fortify.user = fortify_user
+      end
+
       yield
     ensure
-      # to address the thread variable leak issues in Puma/Thin webserver
-      Fortify.user = nil
-      Fortify.enabled = prior_enabled_state
+      @securely_nesting -= 1
+
+      if @securely_nesting == 0
+        # to address the thread variable leak issues in Puma/Thin webserver
+        Fortify.user = nil
+        Fortify.enabled = prior_enabled_state
+      end
     end
   end
 end
