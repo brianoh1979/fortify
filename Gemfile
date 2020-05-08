@@ -24,7 +24,7 @@ gem 'fasterer'
 gem 'bundler-audit'
 gem 'rails_best_practices'
 gem 'sass-rails', '5.0.6'
-#gem 'simplecov', require: false, group: :test
+gem 'simplecov', require: false
 gem 'turbolinks', '5.0.1'
 gem 'uglifier', '3.2.0'
 #gem 'rails-html-sanitizer', '1.0.4'
