@@ -18,7 +18,8 @@ jobs:
 
     steps:
       - checkout
-
+      - run: apt-get update
+      - run: sudo apt-get update
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -30,15 +31,16 @@ jobs:
           name: install dependencies
           command: |
             bundle install --jobs=4 --retry=3 --path vendor/bundle
-
+      - run: bundle update --bundler
       - save_cache:
           paths:
             - ./vendor/bundle
           key: v1-dependencies-{{ checksum "Gemfile.lock" }}
         
       # Database setup
-      - run: bundle exec rake db:create
-      - run: bundle exec rake db:schema:load
+      - run: rake db:test:prepare
+ #     - run: bundle exec rake db:create
+ #     - run: bundle exec rake db:schema:load
 
       # run tests!
       - run:
