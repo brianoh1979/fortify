@@ -25,6 +25,11 @@ gem 'bundler-audit'
 gem 'rails_best_practices'
 gem 'sass-rails', '5.0.6'
 gem 'simplecov', require: false
+gem 'fortify', require: false
+gem 'pry', require: false
+gem 'pry-byebug', require: false
+gem 'database_cleaner', require: false
+gem 'bundler', require: false
 gem 'turbolinks', '5.0.1'
 gem 'uglifier', '3.2.0'
 #gem 'rails-html-sanitizer', '1.0.4'
