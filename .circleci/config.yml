@@ -33,8 +33,8 @@ jobs:
             bundle install 
       - run: bundle update --bundler
       - save_cache:
-#          paths:
-#            - ./vendor/bundle
+          paths:
+            - vendor/bundle
           key: v1-dependencies-{{ checksum "Gemfile.lock" }}
         
       # Database setup
